@@ -34,11 +34,12 @@ const Navbar = () => {
   const navLinks = [{ name: "Home", path: "/" }];
   const pathname = usePathname();
   const router = useRouter();
-  const handleLogOut = () => {
-    logOut();
+  const handleLogOut = async () => {
+    await logOut();
     setIsLoading(true);
-    protectedRoutes.some((route) => pathname.match(route));
-    router.push("/");
+    if (protectedRoutes.some((route) => pathname.match(route))) {
+      router.push("/");
+    }
   };
   return (
     <header className="sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-3">
@@ -152,9 +153,9 @@ const Navbar = () => {
                           <Link href="/profile">
                             <DropdownMenuItem>Profile</DropdownMenuItem>
                           </Link>
-                          {/* <Link href={`/${user.role.toLowerCase()}/dashboard`}> */}
-                          <DropdownMenuItem>Dashboard</DropdownMenuItem>
-                          {/* </Link> */}
+                          <Link href={`/${user.role.toLowerCase()}/dashboard`}>
+                            <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                          </Link>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
 

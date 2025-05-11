@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
@@ -17,9 +18,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginValidationSchmea } from "./LoginValidationSchema";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useUser } from "@/context/UserContext";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
+  const { setIsLoading, refetchUser } = useUser();
   const redirect = searchParams.get("redirectPath");
   const router = useRouter();
   const form = useForm({
@@ -28,16 +31,23 @@ export default function LoginForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    const res = await loginUser(data);
-    if (res.success) {
-      toast.success("Logged in Succesfully");
-      if (redirect) {
-        router.push(redirect);
+    try {
+      const res = await loginUser(data);
+
+      if (res?.success) {
+        setIsLoading(true);
+        await refetchUser();
+        toast.success(res?.message);
+        if (redirect) {
+          router.push(redirect);
+        } else {
+          router.push("/");
+        }
       } else {
-        router.push("/");
+        toast.error(res?.message);
       }
-    } else {
-      toast.error("Log In Failed");
+    } catch (err: any) {
+      console.error(err);
     }
   };
 

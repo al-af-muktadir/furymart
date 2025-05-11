@@ -62,7 +62,7 @@ const ImageUploader = ({
               src={img}
               alt=""
               width={100}
-              height={100}
+              height={20}
               className="rounded-md"
             />
             <div

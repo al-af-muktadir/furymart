@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { getCurrentUser } from "@/services/AuthServices";
 import { IUSER } from "@/types";
-import React, {
+
+import {
   createContext,
   Dispatch,
   SetStateAction,
@@ -11,26 +12,39 @@ import React, {
   useState,
 } from "react";
 
-interface IProvider {
+interface IUserProv {
   user: IUSER | null;
   isLoading: boolean;
+  setUser: (user: IUSER | null) => void;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
-  setUser: (user: IUSER) => void;
+  refetchUser: () => Promise<void>;
 }
-const UserContext = createContext<IProvider | undefined>(undefined);
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserContext = createContext<IUserProv | undefined>(undefined);
+
+const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<IUSER | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
   const handleUser = async () => {
     const user = await getCurrentUser();
     setUser(user);
     setIsLoading(false);
   };
+
   useEffect(() => {
     handleUser();
   }, [isLoading]);
+
   return (
-    <UserContext.Provider value={{ user, setUser, isLoading, setIsLoading }}>
+    <UserContext.Provider
+      value={{
+        user,
+        setUser,
+        isLoading,
+        setIsLoading,
+        refetchUser: handleUser,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -38,8 +52,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error("Use use must be from User Context");
+
+  if (context == undefined) {
+    throw new Error("useUser must be used within the UserProvider context");
   }
+
   return context;
 };
+
+export default UserProvider;
